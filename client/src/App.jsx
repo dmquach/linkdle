@@ -18,7 +18,8 @@ function App() {
   const [answer, setAnswer] = useState("");
   const [keyColors, setKeyColors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [shake, setShake] = useState(false);
+
 
   const startGame = async () => {
     const res = await fetch(`${API_URL}/api/games`, { method: "POST" });
@@ -61,6 +62,8 @@ function App() {
     if (!gameId || status !== "active" || isSubmitting) return;
 
     if (currentGuess.length !== 5) {
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
       setMessage("Not enough letters.");
       return;
     }
@@ -80,6 +83,15 @@ function App() {
 
       if (!res.ok) {
         setMessage(data.error || "Something went wrong.");
+
+        if (data.error === "Not a valid word.") {
+          setShake(true);
+
+          setTimeout(() => {
+            setShake(false);
+          }, 500);
+        }
+
         return;
       }
 
@@ -181,7 +193,12 @@ function App() {
 
       <div className="board">
         {rows.map((row, rowIndex) => (
-          <div className="row" key={rowIndex}>
+         <div
+            className={`row ${
+              shake && rowIndex === guesses.length ? "shake" : ""
+            }`}
+            key={rowIndex}
+          >
             {row.map((tile, colIndex) => (
               <div className={`tile ${tile.color}`} key={colIndex}>
                 {tile.letter}
