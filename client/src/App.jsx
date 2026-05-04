@@ -91,7 +91,7 @@ function App() {
 
   return (
     <div className="app">
-      <h1>Definitely Not Wordle</h1>
+      <h1>Linkdle</h1>
 
       <button onClick={startGame}>New Game</button>
 
@@ -140,6 +140,11 @@ function App() {
         </button>
       </form>
 
+      <button onClick={revealAnswer}>Reveal Answer</button>
+
+      <p>{message}</p>
+
+      {answer && <h2>Answer: {answer}</h2>}
     </div>
   );
 }
