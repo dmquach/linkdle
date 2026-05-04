@@ -24,7 +24,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://your-frontend-name.onrender.com",
+      "https://https://linkdle-api.onrender.com",
     ],
     credentials: true,
   })
