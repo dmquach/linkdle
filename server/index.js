@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { getRandomWord, checkGuess, isValidWord } from "./gameLogic.js";
 import { pool } from "./db.js";
 import jwt from "jsonwebtoken";
+import fs from "fs";
 
 import cookieParser from "cookie-parser";
 import {
@@ -232,7 +233,11 @@ app.post("/api/admin/init-db", async (req, res) => {
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    const schema = fs.readFileSync("./schema.sql", "utf8");
+    const schema = fs.readFileSync(
+      new URL("./schema.sql", import.meta.url),
+      "utf8"
+    );
+
     await pool.query(schema);
 
     res.json({ message: "Database initialized successfully." });
