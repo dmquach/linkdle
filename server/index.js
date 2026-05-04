@@ -222,3 +222,22 @@ app.get("/api/users/me/stats", requireAuth, async (req, res) => {
     guessDistribution,
   });
 });
+
+//db
+app.post("/api/admin/init-db", async (req, res) => {
+  try {
+    const secret = req.headers["x-admin-secret"];
+
+    if (secret !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const schema = fs.readFileSync("./schema.sql", "utf8");
+    await pool.query(schema);
+
+    res.json({ message: "Database initialized successfully." });
+  } catch (error) {
+    console.error("Init DB error:", error);
+    res.status(500).json({ error: "Database initialization failed." });
+  }
+});
