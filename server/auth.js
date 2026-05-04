@@ -22,8 +22,23 @@ export async function registerUser(req, res) {
       "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email",
       [email.toLowerCase(), passwordHash]
     );
+    const user = result.rows[0];
 
-    return res.status(201).json({ user: result.rows[0] });
+    const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+    );
+
+    res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(201).json({ user });
+    // return res.status(201).json({ user: result.rows[0] });
   } catch (error) {
     if (error.code === "23505") {
       return res.status(400).json({ error: "Email already exists." });
