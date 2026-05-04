@@ -22,6 +22,7 @@ Guess the hidden 5-letter word in 6 tries with real-time feedback, persistent us
 * Virtual keyboard + physical keyboard support
 * Tile flip animations and row shake feedback
 * Input validation for guesses
+* Login has to be done before game starts to track data
 
 ---
 ## Word List Notes
@@ -149,7 +150,7 @@ npm run dev
 ---
 
 ## 🛠️ Future Improvements
-
+* Break down into more modules
 * Daily word system (global challenge)
 * Leaderboards
 * Share results (Wordle-style emoji grid)
