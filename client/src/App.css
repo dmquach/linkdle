@@ -143,3 +143,23 @@ h2 {
   animation: flip 0.6s ease forwards;
   transform-style: preserve-3d;
 }
+
+.auth-box {
+  margin: 20px auto;
+  padding: 16px;
+  max-width: 360px;
+  border: 1px solid #3a3a3c;
+  border-radius: 8px;
+}
+
+.auth-box input {
+  display: block;
+  width: 90%;
+  margin: 8px auto;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.auth-box button {
+  margin: 6px;
+}

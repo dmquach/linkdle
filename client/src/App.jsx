@@ -21,9 +21,25 @@ function App() {
   const [shake, setShake] = useState(false);
   const [revealingRow, setRevealingRow] = useState(null);
 
+  const [user, setUser] = useState(null);
+  const [authMode, setAuthMode] = useState("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
+
+  const apiFetch = (path, options = {}) => {
+    return fetch(`${API_URL}${path}`, {
+      ...options,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
+  };
 
   const startGame = async () => {
-    const res = await fetch(`${API_URL}/api/games`, { method: "POST" });
+    const res = await apiFetch("/api/games", { method: "POST" });
     const data = await res.json();
 
     setGameId(data.id);
@@ -36,9 +52,73 @@ function App() {
   };
 
   const fetchAnswer = async () => {
-    const res = await fetch(`${API_URL}/api/games/${gameId}/answer`);
+    const res = await apiFetch(`/api/games/${gameId}/answer`);
     const data = await res.json();
     setAnswer(data.answer);
+  };
+
+  const checkCurrentUser = async () => {
+    try {
+      const res = await apiFetch("/api/auth/me");
+
+      if (!res.ok) {
+        setUser(null);
+        return;
+      }
+
+      const data = await res.json();
+      setUser(data.user);
+    } catch {
+      setUser(null);
+    }
+  };
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+
+    const endpoint =
+      authMode === "login" ? "/api/auth/login" : "/api/auth/register";
+
+    const res = await apiFetch(endpoint, {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setAuthMessage(data.error || "Authentication failed.");
+      return;
+    }
+
+    setUser(data.user);
+    setEmail("");
+    setPassword("");
+    setAuthMessage("");
+  };
+
+  const handleDemoLogin = async () => {
+    const res = await apiFetch("/api/auth/demo", {
+      method: "POST",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setAuthMessage(data.error || "Demo login failed.");
+      return;
+    }
+
+    setUser(data.user);
+    setAuthMessage("");
+  };
+
+  const handleLogout = async () => {
+    await apiFetch("/api/auth/logout", {
+      method: "POST",
+    });
+
+    setUser(null);
   };
 
   const updateKeyboardColors = (feedback) => {
@@ -72,11 +152,8 @@ function App() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`${API_URL}/api/games/${gameId}/guess`, {
+      const res = await apiFetch(`/api/games/${gameId}/guess`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ guess: currentGuess }),
       });
 
@@ -87,14 +164,12 @@ function App() {
 
         if (data.error === "Not a valid word.") {
           setShake(true);
-
-          setTimeout(() => {
-            setShake(false);
-          }, 500);
+          setTimeout(() => setShake(false), 500);
         }
 
         return;
       }
+
       const submittedRowIndex = guesses.length;
 
       setGuesses((prev) => [...prev, data.feedback]);
@@ -115,15 +190,6 @@ function App() {
           setMessage(`Attempt ${data.attemptsUsed}/6`);
         }
       }, 1600);
-
-      // if (data.status === "won") {
-      //   setMessage("You won!");
-      // } else if (data.status === "lost") {
-      //   setMessage("You lost!");
-      //   fetchAnswer();
-      // } else {
-      //   setMessage(`Attempt ${data.attemptsUsed}/6`);
-      // }
     } finally {
       setIsSubmitting(false);
     }
@@ -178,6 +244,7 @@ function App() {
   }, [currentGuess, status, gameId, isSubmitting]);
 
   useEffect(() => {
+    checkCurrentUser();
     startGame();
   }, []);
 
@@ -207,27 +274,73 @@ function App() {
     <div className="app">
       <h1>Definitely Not Wordle</h1>
 
+      <div className="auth-box">
+        {user ? (
+          <div>
+            <p>Logged in as {user.email}</p>
+            <button onClick={handleLogout}>Logout</button>
+          </div>
+        ) : (
+          <form onSubmit={handleAuthSubmit}>
+            <h2>{authMode === "login" ? "Login" : "Register"}</h2>
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <button type="submit">
+              {authMode === "login" ? "Login" : "Register"}
+            </button>
+
+            <button type="button" onClick={handleDemoLogin}>
+              Demo Login
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setAuthMode(authMode === "login" ? "register" : "login")
+              }
+            >
+              Switch to {authMode === "login" ? "Register" : "Login"}
+            </button>
+
+            {authMessage && <p>{authMessage}</p>}
+          </form>
+        )}
+      </div>
+
       <div className="board">
         {rows.map((row, rowIndex) => (
-         <div
+          <div
             className={`row ${
               shake && rowIndex === guesses.length ? "shake" : ""
             }`}
             key={rowIndex}
           >
             {row.map((tile, colIndex) => (
-            <div
-              className={`tile ${tile.color} ${
-                revealingRow === rowIndex ? "flip" : ""
-              }`}
-              style={{
-                animationDelay:
-                  revealingRow === rowIndex ? `${colIndex * 0.25}s` : "0s",
-              }}
-              key={colIndex}
-            >
-              {tile.letter}
-            </div>
+              <div
+                className={`tile ${tile.color} ${
+                  revealingRow === rowIndex ? "flip" : ""
+                }`}
+                style={{
+                  animationDelay:
+                    revealingRow === rowIndex ? `${colIndex * 0.25}s` : "0s",
+                }}
+                key={colIndex}
+              >
+                {tile.letter}
+              </div>
             ))}
           </div>
         ))}
