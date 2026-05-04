@@ -19,6 +19,7 @@ function App() {
   const [keyColors, setKeyColors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shake, setShake] = useState(false);
+  const [revealingRow, setRevealingRow] = useState(null);
 
 
   const startGame = async () => {
@@ -94,20 +95,35 @@ function App() {
 
         return;
       }
+      const submittedRowIndex = guesses.length;
 
       setGuesses((prev) => [...prev, data.feedback]);
-      updateKeyboardColors(data.feedback);
       setCurrentGuess("");
-      setStatus(data.status);
+      setRevealingRow(submittedRowIndex);
 
-      if (data.status === "won") {
-        setMessage("You won!");
-      } else if (data.status === "lost") {
-        setMessage("You lost!");
-        fetchAnswer();
-      } else {
-        setMessage(`Attempt ${data.attemptsUsed}/6`);
-      }
+      setTimeout(() => {
+        updateKeyboardColors(data.feedback);
+        setStatus(data.status);
+        setRevealingRow(null);
+
+        if (data.status === "won") {
+          setMessage("You won!");
+        } else if (data.status === "lost") {
+          setMessage("You lost!");
+          fetchAnswer();
+        } else {
+          setMessage(`Attempt ${data.attemptsUsed}/6`);
+        }
+      }, 1600);
+
+      // if (data.status === "won") {
+      //   setMessage("You won!");
+      // } else if (data.status === "lost") {
+      //   setMessage("You lost!");
+      //   fetchAnswer();
+      // } else {
+      //   setMessage(`Attempt ${data.attemptsUsed}/6`);
+      // }
     } finally {
       setIsSubmitting(false);
     }
@@ -200,9 +216,18 @@ function App() {
             key={rowIndex}
           >
             {row.map((tile, colIndex) => (
-              <div className={`tile ${tile.color}`} key={colIndex}>
-                {tile.letter}
-              </div>
+            <div
+              className={`tile ${tile.color} ${
+                revealingRow === rowIndex ? "flip" : ""
+              }`}
+              style={{
+                animationDelay:
+                  revealingRow === rowIndex ? `${colIndex * 0.25}s` : "0s",
+              }}
+              key={colIndex}
+            >
+              {tile.letter}
+            </div>
             ))}
           </div>
         ))}
