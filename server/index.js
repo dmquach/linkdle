@@ -37,7 +37,7 @@ app.post("/api/games", (req, res) => {
     id,
     status: "active",
     attemptsUsed: 0,
-    maxAttempts: 5,
+    maxAttempts: 6,
   });
 });
 
@@ -71,7 +71,7 @@ app.post("/api/games/:id/guess", (req, res) => {
 
   if (cleanGuess === game.answer) {
     game.status = "won";
-  } else if (game.attemptsUsed >= 5) {
+  } else if (game.attemptsUsed >= 6) {
     game.status = "lost";
   }
 
@@ -81,7 +81,7 @@ app.post("/api/games/:id/guess", (req, res) => {
     feedback,
     status: game.status,
     attemptsUsed: game.attemptsUsed,
-    maxAttempts: 5,
+    maxAttempts: 6,
   });
 });
 
@@ -97,7 +97,7 @@ app.get("/api/games/:id", (req, res) => {
     guesses: game.guesses,
     status: game.status,
     attemptsUsed: game.attemptsUsed,
-    maxAttempts: 5,
+    maxAttempts: 6,
   });
 });
 

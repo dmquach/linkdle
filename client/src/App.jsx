@@ -14,7 +14,7 @@ function App() {
   const [guesses, setGuesses] = useState([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [status, setStatus] = useState("not_started");
-  const [message, setMessage] = useState("Click New Game to start.");
+  const [message, setMessage] = useState("");
   const [answer, setAnswer] = useState("");
   const [keyColors, setKeyColors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -93,7 +93,7 @@ function App() {
         setMessage("You lost!");
         fetchAnswer();
       } else {
-        setMessage(`Attempt ${data.attemptsUsed}/5`);
+        setMessage(`Attempt ${data.attemptsUsed}/6`);
       }
     } finally {
       setIsSubmitting(false);
@@ -125,7 +125,7 @@ function App() {
   };
 
   useEffect(() => {
-   const handlePhysicalKeyboard = (e) => {
+    const handlePhysicalKeyboard = (e) => {
       e.preventDefault();
 
       if (e.repeat) return;
@@ -146,11 +146,15 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handlePhysicalKeyboard);
     };
-  }, [currentGuess, status, gameId]);
+  }, [currentGuess, status, gameId, isSubmitting]);
+
+  useEffect(() => {
+    startGame();
+  }, []);
 
   const rows = [];
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     if (i < guesses.length) {
       rows.push(guesses[i]);
     } else if (i === guesses.length && status === "active") {
@@ -174,8 +178,6 @@ function App() {
     <div className="app">
       <h1>Definitely Not Wordle</h1>
 
-      <button onClick={startGame}>New Game</button>
-
       <div className="board">
         {rows.map((row, rowIndex) => (
           <div className="row" key={rowIndex}>
@@ -192,20 +194,24 @@ function App() {
 
       {answer && <h2>Answer: {answer}</h2>}
 
+      {(status === "won" || status === "lost") && (
+        <button onClick={startGame}>New Game</button>
+      )}
+      
       <div className="keyboard">
         {keyboardRows.map((row, rowIndex) => (
           <div className="keyboard-row" key={rowIndex}>
             {row.map((key) => (
-            <button
-              key={key}
-              disabled={isSubmitting}
-              className={`key ${keyColors[key] || ""} ${
-                key === "ENTER" || key === "BACK" ? "wide-key" : ""
-              }`}
-              onClick={() => handleKeyPress(key)}
-            >
-              {key}
-            </button>
+              <button
+                key={key}
+                disabled={isSubmitting}
+                className={`key ${keyColors[key] || ""} ${
+                  key === "ENTER" || key === "BACK" ? "wide-key" : ""
+                }`}
+                onClick={() => handleKeyPress(key)}
+              >
+                {key}
+              </button>
             ))}
           </div>
         ))}
