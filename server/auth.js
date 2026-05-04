@@ -60,12 +60,12 @@ export async function loginUser(req, res) {
     { expiresIn: "7d" }
   );
 
-  res.cookie(COOKIE_NAME, token, {
+    res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    });
 
   return res.json({
     user: {
