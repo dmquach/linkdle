@@ -18,6 +18,7 @@ function App() {
   const [answer, setAnswer] = useState("");
   const [keyColors, setKeyColors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
 
   const startGame = async () => {
     const res = await fetch(`${API_URL}/api/games`, { method: "POST" });
@@ -197,7 +198,7 @@ function App() {
       {(status === "won" || status === "lost") && (
         <button onClick={startGame}>New Game</button>
       )}
-      
+
       <div className="keyboard">
         {keyboardRows.map((row, rowIndex) => (
           <div className="keyboard-row" key={rowIndex}>

@@ -10,4 +10,4 @@ Backend: Node + express js, either mongoDB or PostgreSQL (Leaning postgreSQL bec
 
 Hosting: Render or AWS, leaning towards render for familiarity
 
-API for probably word list?
+API for word list: https://api.dictionaryapi.dev/api/v2/entries/en/<word>

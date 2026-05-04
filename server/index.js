@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { getRandomWord, checkGuess } from "./gameLogic.js";
+import { getRandomWord, checkGuess, isValidWord } from "./gameLogic.js";
 
 dotenv.config();
 
@@ -41,7 +41,7 @@ app.post("/api/games", (req, res) => {
   });
 });
 
-app.post("/api/games/:id/guess", (req, res) => {
+app.post("/api/games/:id/guess", async (req, res) => {
   const { id } = req.params;
   const { guess } = req.body;
 
@@ -60,6 +60,12 @@ app.post("/api/games/:id/guess", (req, res) => {
   }
 
   const cleanGuess = guess.toUpperCase();
+  const valid = await isValidWord(cleanGuess);
+
+  if (!valid) {
+    return res.status(400).json({ error: "Not a valid word." });
+  }
+
   const feedback = checkGuess(game.answer, cleanGuess);
 
   game.attemptsUsed++;

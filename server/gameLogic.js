@@ -4,6 +4,19 @@ export function getRandomWord() {
   return WORDS[Math.floor(Math.random() * WORDS.length)];
 }
 
+export async function isValidWord(word) {
+  try {
+    const res = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`
+    );
+
+    return res.ok;
+  } catch (error) {
+    console.error("Dictionary API error:", error);
+    return false;
+  }
+}
+
 export function checkGuess(answer, guess) {
   answer = answer.toUpperCase();
   guess = guess.toUpperCase();
