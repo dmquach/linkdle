@@ -346,7 +346,10 @@ function App() {
         </div>
       </div>
 
-      <h1>Linkdle</h1>
+      <div className="title">
+        <h1>Linkdle</h1>
+        <img src="/GoLinks.png" alt="GoLinks Logo" className="logo" />
+      </div>
 
       {showHowToPlay && (
         <div className="modal-backdrop">
