@@ -162,11 +162,71 @@ h2 {
   margin: 6px auto;
 }
 
+.top-bar {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-label {
+  margin-right: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.demo-button {
+  background: #f5c542;
+  color: #121213;
+  font-weight: bold;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.modal {
+  position: relative;
+  background: #1f1f22;
+  border: 1px solid #3a3a3c;
+  border-radius: 12px;
+  padding: 28px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  color: white;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.modal input {
+  display: block;
+  width: 90%;
+  margin: 10px auto;
+  padding: 10px;
+  font-size: 16px;
+}
+
 .stats-box {
-  margin: 20px auto;
-  padding: 16px;
-  max-width: 300px;
+  margin: 16px auto;
+  padding: 14px;
   border: 1px solid #3a3a3c;
   border-radius: 8px;
 }
-

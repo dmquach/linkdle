@@ -26,13 +26,16 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authMessage, setAuthMessage] = useState("");
-  const [screen, setScreen] = useState("start");
 
   const [stats, setStats] = useState({
     played: 0,
     wins: 0,
     losses: 0,
   });
+
+  const [showHowToPlay, setShowHowToPlay] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
 
   const apiFetch = (path, options = {}) => {
     return fetch(`${API_URL}${path}`, {
@@ -54,12 +57,11 @@ function App() {
       setGuesses([]);
       setCurrentGuess("");
       setStatus(data.status);
-      setMessage("New game started!");
+      setMessage("");
       setAnswer("");
       setKeyColors({});
-      setScreen("game");
     } catch {
-      setMessage("Backend server is not running.");
+      setMessage("Backend server is not running. Try refreshing.");
     }
   };
 
@@ -107,6 +109,7 @@ function App() {
     setEmail("");
     setPassword("");
     setAuthMessage("");
+    setShowAuthModal(false);
   };
 
   const handleDemoLogin = async () => {
@@ -123,6 +126,7 @@ function App() {
 
     setUser(data.user);
     setAuthMessage("");
+    setShowAuthModal(false);
   };
 
   const handleLogout = async () => {
@@ -200,7 +204,7 @@ function App() {
           losses: prev.losses,
         }));
         setMessage("You won!");
-        setScreen("gameover");
+        setShowGameOverModal(true);
       } else if (data.status === "lost") {
         setStats((prev) => ({
           played: prev.played + 1,
@@ -209,7 +213,7 @@ function App() {
         }));
         setMessage("You lost!");
         fetchAnswer();
-        setScreen("gameover");
+        setShowGameOverModal(true);
       } else {
         setMessage(`Attempt ${data.attemptsUsed}/6`);
       }
@@ -276,7 +280,7 @@ function App() {
 
   useEffect(() => {
     checkCurrentUser();
-    // startGame();
+    startGame();
   }, []);
 
   const rows = [];
@@ -303,173 +307,187 @@ function App() {
 
   return (
     <div className="app">
+      <div className="top-bar">
+        <button onClick={() => setShowHowToPlay(true)}>How to Play</button>
+
+        <div>
+          {user ? (
+            <>
+              <span className="user-label">{user.email}</span>
+              <button onClick={handleLogout}>Logout</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setShowAuthModal(true)}>Login</button>
+              <button className="demo-button" onClick={handleDemoLogin}>
+                Demo Login
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
       <h1>Definitely Not Wordle</h1>
 
-      {screen === "start" && (
-        <div className="start-screen">
-          <h2>How to Play</h2>
-          <p>Guess the secret 5-letter word in 6 tries.</p>
-          <p>Green means correct letter and position.</p>
-          <p>Yellow means the letter is in the word but wrong position.</p>
-          <p>Gray means the letter is not in the word.</p>
+      {showHowToPlay && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <button className="close-button" onClick={() => setShowHowToPlay(false)}>
+              ×
+            </button>
 
-          <div className="auth-box compact">
+            <h2>How to Play</h2>
+            <p>Guess the secret 5-letter word in 6 tries.</p>
+            <p><strong>Green</strong>: correct letter and position.</p>
+            <p><strong>Yellow</strong>: letter is in the word, wrong position.</p>
+            <p><strong>Gray</strong>: letter is not in the word.</p>
+
+            <button onClick={() => setShowHowToPlay(false)}>Start Playing</button>
+          </div>
+        </div>
+      )}
+
+      {showAuthModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <button className="close-button" onClick={() => setShowAuthModal(false)}>
+              ×
+            </button>
+
+            <h2>{authMode === "login" ? "Login" : "Register"}</h2>
+
+            <form onSubmit={handleAuthSubmit}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <button type="submit">
+                {authMode === "login" ? "Login" : "Register"}
+              </button>
+
+              <button type="button" className="demo-button" onClick={handleDemoLogin}>
+                Demo Login
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setAuthMode(authMode === "login" ? "register" : "login")
+                }
+              >
+                Switch to {authMode === "login" ? "Register" : "Login"}
+              </button>
+
+              {authMessage && <p>{authMessage}</p>}
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showGameOverModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <button
+              className="close-button"
+              onClick={() => {
+                  setShowGameOverModal(false);
+                  setShowAuthModal(true);
+                }
+              }
+            >
+              ×
+            </button>
+
+            <h2>{message}</h2>
+
+            {answer && <h3>Answer: {answer}</h3>}
+
             {user ? (
-              <div>
-                <p>Logged in as {user.email}</p>
-                <button onClick={handleLogout}>Logout</button>
+              <div className="stats-box">
+                <h3>Your Stats</h3>
+                <p>Played: {stats.played}</p>
+                <p>Wins: {stats.wins}</p>
+                <p>Losses: {stats.losses}</p>
               </div>
             ) : (
-              <form onSubmit={handleAuthSubmit}>
-                <h3>{authMode === "login" ? "Login" : "Register"}</h3>
-
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button type="submit">
-                  {authMode === "login" ? "Login" : "Register"}
-                </button>
-
-                <button type="button" onClick={handleDemoLogin}>
-                  Demo Login
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAuthMode(authMode === "login" ? "register" : "login")
-                  }
-                >
-                  Switch to {authMode === "login" ? "Register" : "Login"}
-                </button>
-
-                {authMessage && <p>{authMessage}</p>}
-              </form>
-            )}
-          </div>
-
-          <button onClick={startGame}>Start Game</button>
-        </div>
-      )}
-
-      {screen === "game" && (
-        <>
-          <div className="board">
-            {rows.map((row, rowIndex) => (
-              <div
-                className={`row ${
-                  shake && rowIndex === guesses.length ? "shake" : ""
-                }`}
-                key={rowIndex}
-              >
-                {row.map((tile, colIndex) => (
-                  <div
-                    className={`tile ${tile.color} ${
-                      revealingRow === rowIndex ? "flip" : ""
-                    }`}
-                    style={{
-                      animationDelay:
-                        revealingRow === rowIndex ? `${colIndex * 0.25}s` : "0s",
-                    }}
-                    key={colIndex}
-                  >
-                    {tile.letter}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          <p>{message}</p>
-
-          <div className="keyboard">
-            {keyboardRows.map((row, rowIndex) => (
-              <div className="keyboard-row" key={rowIndex}>
-                {row.map((key) => (
-                  <button
-                    key={key}
-                    disabled={isSubmitting}
-                    className={`key ${keyColors[key] || ""} ${
-                      key === "ENTER" || key === "BACK" ? "wide-key" : ""
-                    }`}
-                    onClick={() => handleKeyPress(key)}
-                  >
-                    {key}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {screen === "gameover" && (
-        <div className="game-over">
-          <h2>{message}</h2>
-
-          {answer && <h3>Answer: {answer}</h3>}
-
-          {user ? (
-            <div className="stats-box">
-              <h3>Your Stats</h3>
-              <p>Played: {stats.played}</p>
-              <p>Wins: {stats.wins}</p>
-              <p>Losses: {stats.losses}</p>
-            </div>
-          ) : (
-            <div className="auth-box compact">
               <p>Login to save your stats.</p>
+            )}
 
-              <form onSubmit={handleAuthSubmit}>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button type="submit">
-                  {authMode === "login" ? "Login" : "Register"}
-                </button>
-
-                <button type="button" onClick={handleDemoLogin}>
+            {!user && (
+              <>
+                <button onClick={() => setShowAuthModal(true)}>Login</button>
+                <button className="demo-button" onClick={handleDemoLogin}>
                   Demo Login
                 </button>
+              </>
+            )}
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAuthMode(authMode === "login" ? "register" : "login")
-                  }
-                >
-                  Switch to {authMode === "login" ? "Register" : "Login"}
-                </button>
-              </form>
-            </div>
-          )}
-
-          <button onClick={startGame}>New Game</button>
-          <button onClick={() => setScreen("start")}>How to Play</button>
+            <button onClick={startGame}>New Game</button>
+          </div>
         </div>
       )}
+
+      <div className="board">
+        {rows.map((row, rowIndex) => (
+          <div
+            className={`row ${
+              shake && rowIndex === guesses.length ? "shake" : ""
+            }`}
+            key={rowIndex}
+          >
+            {row.map((tile, colIndex) => (
+              <div
+                className={`tile ${tile.color} ${
+                  revealingRow === rowIndex ? "flip" : ""
+                }`}
+                style={{
+                  animationDelay:
+                    revealingRow === rowIndex ? `${colIndex * 0.25}s` : "0s",
+                }}
+                key={colIndex}
+              >
+                {tile.letter}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <p>{message}</p>
+
+      {(status === "won" || status === "lost") && (
+        <button onClick={startGame}>New Game</button>
+      )}
+
+      <div className="keyboard">
+        {keyboardRows.map((row, rowIndex) => (
+          <div className="keyboard-row" key={rowIndex}>
+            {row.map((key) => (
+              <button
+                key={key}
+                disabled={isSubmitting || status !== "active"}
+                className={`key ${keyColors[key] || ""} ${
+                  key === "ENTER" || key === "BACK" ? "wide-key" : ""
+                }`}
+                onClick={() => handleKeyPress(key)}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+      
     </div>
   );
 }
