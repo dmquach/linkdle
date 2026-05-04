@@ -24,6 +24,11 @@ Guess the hidden 5-letter word in 6 tries with real-time feedback, persistent us
 * Input validation for guesses
 
 ---
+## Word List Notes
+
+The backend uses a curated 5-letter answer list plus a larger valid-guess list.  
+Some words are intentionally excluded, including many plural 4-letter words ending in `s`, because they make the game less interesting as answer choices.
+---
 
 ### 🔐 Authentication
 
