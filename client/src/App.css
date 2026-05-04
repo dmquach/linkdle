@@ -144,23 +144,29 @@ h2 {
   transform-style: preserve-3d;
 }
 
-.auth-box {
+.start-screen,
+.game-over {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.auth-box.compact {
+  margin: 20px auto;
+  padding: 14px;
+  max-width: 320px;
+}
+
+.auth-box.compact input {
+  width: 90%;
+  padding: 8px;
+  margin: 6px auto;
+}
+
+.stats-box {
   margin: 20px auto;
   padding: 16px;
-  max-width: 360px;
+  max-width: 300px;
   border: 1px solid #3a3a3c;
   border-radius: 8px;
-}
-
-.auth-box input {
-  display: block;
-  width: 90%;
-  margin: 8px auto;
-  padding: 10px;
-  font-size: 16px;
-}
-
-.auth-box button {
-  margin: 6px;
 }
 
