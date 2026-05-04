@@ -202,7 +202,7 @@ function App() {
       if (!res.ok) {
         setMessage(data.error || "Something went wrong.");
 
-        if (data.error === "Not a valid word OR valid word API not working. Submit guess again or change word") {
+        if (data.error === "Not a valid word OR valid word API not working. Submit guess again or change word.") {
           setShake(true);
           setTimeout(() => setShake(false), 500);
         }
