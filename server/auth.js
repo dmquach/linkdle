@@ -76,7 +76,12 @@ export async function loginUser(req, res) {
 }
 
 export function logoutUser(req, res) {
-  res.clearCookie(COOKIE_NAME);
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+
   res.json({ message: "Logged out." });
 }
 

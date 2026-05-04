@@ -120,6 +120,14 @@ function App() {
       return;
     }
 
+    setStats({
+      played: 0,
+      wins: 0,
+      losses: 0,
+      winPercentage: 0,
+      guessDistribution: [],
+    });
+
     setUser(data.user);
     setEmail("");
     setPassword("");
@@ -159,6 +167,10 @@ function App() {
       winPercentage: 0,
       guessDistribution: [],
     });
+
+      setEmail("");
+      setPassword("");
+      setAuthMessage("");
   };
 
   const updateKeyboardColors = (feedback) => {
