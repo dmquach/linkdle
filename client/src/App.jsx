@@ -39,16 +39,20 @@ function App() {
   };
 
   const startGame = async () => {
-    const res = await apiFetch("/api/games", { method: "POST" });
-    const data = await res.json();
+    try {
+      const res = await apiFetch("/api/games", { method: "POST" });
+      const data = await res.json();
 
-    setGameId(data.id);
-    setGuesses([]);
-    setCurrentGuess("");
-    setStatus(data.status);
-    setMessage("New game started!");
-    setAnswer("");
-    setKeyColors({});
+      setGameId(data.id);
+      setGuesses([]);
+      setCurrentGuess("");
+      setStatus(data.status);
+      setMessage("New game started!");
+      setAnswer("");
+      setKeyColors({});
+    } catch {
+      setMessage("Backend server is not running.");
+    }
   };
 
   const fetchAnswer = async () => {
