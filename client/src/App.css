@@ -230,3 +230,55 @@ h2 {
   border: 1px solid #3a3a3c;
   border-radius: 8px;
 }
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.guess-distribution {
+  margin-top: 12px;
+}
+
+.guess-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.guess-label {
+  width: 20px;
+  font-weight: bold;
+}
+
+.bar-track {
+  flex: 1;
+  height: 26px;
+  background: #3a3a3c;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  min-width: 0;
+  background: #538d4e;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-weight: bold;
+  animation: growBar 0.7s ease-out;
+}
+
+@keyframes growBar {
+  from {
+    width: 0;
+  }
+}

@@ -31,6 +31,8 @@ function App() {
     played: 0,
     wins: 0,
     losses: 0,
+    winPercentage: 0,
+    guessDistribution: [],
   });
 
   const [showHowToPlay, setShowHowToPlay] = useState(true);
@@ -65,6 +67,17 @@ function App() {
     } catch {
       setMessage("Backend server is not running. Try refreshing.");
     }
+  };
+
+  const fetchStats = async () => {
+    if (!user) return;
+
+    const res = await apiFetch("/api/users/me/stats");
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    setStats(data);
   };
 
   const fetchAnswer = async () => {
@@ -202,19 +215,15 @@ function App() {
         setRevealingRow(null);
 
       if (data.status === "won") {
-        setStats((prev) => ({
-          played: prev.played + 1,
-          wins: prev.wins + 1,
-          losses: prev.losses,
-        }));
+        setTimeout(() => {
+          fetchStats();
+        }, 300);
         setMessage("You won!");
         setShowGameOverModal(true);
       } else if (data.status === "lost") {
-        setStats((prev) => ({
-          played: prev.played + 1,
-          wins: prev.wins,
-          losses: prev.losses + 1,
-        }));
+        setTimeout(() => {
+          fetchStats();
+        }, 300);
         setMessage("You lost!");
         fetchAnswer();
         setShowGameOverModal(true);
@@ -286,6 +295,12 @@ function App() {
     checkCurrentUser();
     startGame();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
 
   const rows = [];
 
@@ -447,9 +462,36 @@ function App() {
             {user ? (
               <div className="stats-box">
                 <h3>Your Stats</h3>
+
                 <p>Played: {stats.played}</p>
                 <p>Wins: {stats.wins}</p>
                 <p>Losses: {stats.losses}</p>
+                <p>Win Rate: {stats.winPercentage}%</p>
+
+                <h4>Guess Distribution</h4>
+
+                <div className="guess-distribution">
+                  {stats.guessDistribution.map((item) => (
+                    <div className="guess-row" key={item.attempts}>
+                      <span className="guess-label">{item.attempts}</span>
+
+                      <div className="bar-track">
+                        <div
+                          className="bar-fill"
+                          style={{
+                            width: `${item.percentage}%`,
+                          }}
+                        >
+                          {item.count > 0 && (
+                            <span>
+                              {item.count} ({item.percentage}%)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               <p>Login to save your stats.</p>
