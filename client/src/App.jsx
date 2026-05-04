@@ -17,6 +17,7 @@ function App() {
   const [message, setMessage] = useState("Click New Game to start.");
   const [answer, setAnswer] = useState("");
   const [keyColors, setKeyColors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const startGame = async () => {
     const res = await fetch(`${API_URL}/api/games`, { method: "POST" });
@@ -56,40 +57,46 @@ function App() {
   };
 
   const submitGuess = async () => {
-    if (!gameId || status !== "active") return;
+    if (!gameId || status !== "active" || isSubmitting) return;
 
     if (currentGuess.length !== 5) {
       setMessage("Not enough letters.");
       return;
     }
 
-    const res = await fetch(`${API_URL}/api/games/${gameId}/guess`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ guess: currentGuess }),
-    });
+    setIsSubmitting(true);
 
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_URL}/api/games/${gameId}/guess`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ guess: currentGuess }),
+      });
 
-    if (!res.ok) {
-      setMessage(data.error || "Something went wrong.");
-      return;
-    }
+      const data = await res.json();
 
-    setGuesses((prev) => [...prev, data.feedback]);
-    updateKeyboardColors(data.feedback);
-    setCurrentGuess("");
-    setStatus(data.status);
+      if (!res.ok) {
+        setMessage(data.error || "Something went wrong.");
+        return;
+      }
 
-    if (data.status === "won") {
-      setMessage("You won!");
-    } else if (data.status === "lost") {
-      setMessage("You lost!");
-      fetchAnswer();
-    } else {
-      setMessage(`Attempt ${data.attemptsUsed}/5`);
+      setGuesses((prev) => [...prev, data.feedback]);
+      updateKeyboardColors(data.feedback);
+      setCurrentGuess("");
+      setStatus(data.status);
+
+      if (data.status === "won") {
+        setMessage("You won!");
+      } else if (data.status === "lost") {
+        setMessage("You lost!");
+        fetchAnswer();
+      } else {
+        setMessage(`Attempt ${data.attemptsUsed}/5`);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -118,7 +125,11 @@ function App() {
   };
 
   useEffect(() => {
-    const handlePhysicalKeyboard = (e) => {
+   const handlePhysicalKeyboard = (e) => {
+      e.preventDefault();
+
+      if (e.repeat) return;
+
       const key = e.key.toUpperCase();
 
       if (key === "ENTER") {
@@ -185,15 +196,16 @@ function App() {
         {keyboardRows.map((row, rowIndex) => (
           <div className="keyboard-row" key={rowIndex}>
             {row.map((key) => (
-              <button
-                key={key}
-                className={`key ${keyColors[key] || ""} ${
-                  key === "ENTER" || key === "BACK" ? "wide-key" : ""
-                }`}
-                onClick={() => handleKeyPress(key)}
-              >
-                {key}
-              </button>
+            <button
+              key={key}
+              disabled={isSubmitting}
+              className={`key ${keyColors[key] || ""} ${
+                key === "ENTER" || key === "BACK" ? "wide-key" : ""
+              }`}
+              onClick={() => handleKeyPress(key)}
+            >
+              {key}
+            </button>
             ))}
           </div>
         ))}
