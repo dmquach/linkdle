@@ -47,12 +47,25 @@ app.post("/api/games", (req, res) => {
   const id = Date.now().toString();
   const answer = getRandomWord();
 
+  const token = req.cookies?.token;
+  let userId = null;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded.id;
+    } catch {
+      userId = null;
+    }
+  }
+
   games[id] = {
     id,
     answer,
     guesses: [],
     status: "active",
     attemptsUsed: 0,
+    userId,
   };
 
   res.status(201).json({
@@ -104,17 +117,7 @@ app.post("/api/games/:id/guess", async (req, res) => {
   }
 
     if (game.status === "won" || game.status === "lost") {
-    const token = req.cookies?.token;
-    let userId = null;
-
-    if (token) {
-        try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        userId = decoded.id;
-        } catch {
-        userId = null;
-        }
-    }
+    const userId = game.userId;
 
     if (userId) {
         await pool.query(
@@ -222,27 +225,4 @@ app.get("/api/users/me/stats", requireAuth, async (req, res) => {
       stats.played === 0 ? 0 : Math.round((stats.wins / stats.played) * 100),
     guessDistribution,
   });
-});
-
-//db
-app.post("/api/admin/init-db", async (req, res) => {
-  try {
-    const secret = req.headers["x-admin-secret"];
-
-    if (secret !== process.env.ADMIN_SECRET) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
-    const schema = fs.readFileSync(
-      new URL("./schema.sql", import.meta.url),
-      "utf8"
-    );
-
-    await pool.query(schema);
-
-    res.json({ message: "Database initialized successfully." });
-  } catch (error) {
-    console.error("Init DB error:", error);
-    res.status(500).json({ error: "Database initialization failed." });
-  }
 });

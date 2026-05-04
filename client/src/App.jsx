@@ -152,6 +152,13 @@ function App() {
     });
 
     setUser(null);
+    setStats({
+      played: 0,
+      wins: 0,
+      losses: 0,
+      winPercentage: 0,
+      guessDistribution: [],
+    });
   };
 
   const updateKeyboardColors = (feedback) => {
@@ -464,7 +471,7 @@ function App() {
 
             {user ? (
               <div className="stats-box">
-                <h3>Your Stats</h3>
+                <h3>Your Stats (Sometimes request fails and game data is lost)</h3>
 
                 <p>Played: {stats.played}</p>
                 <p>Wins: {stats.wins}</p>
