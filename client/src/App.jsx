@@ -60,6 +60,8 @@ function App() {
       setMessage("");
       setAnswer("");
       setKeyColors({});
+      setShowGameOverModal(false);
+      setShowAuthModal(false);
     } catch {
       setMessage("Backend server is not running. Try refreshing.");
     }
@@ -110,6 +112,7 @@ function App() {
     setPassword("");
     setAuthMessage("");
     setShowAuthModal(false);
+    setShowGameOverModal(false);
   };
 
   const handleDemoLogin = async () => {
@@ -127,6 +130,7 @@ function App() {
     setUser(data.user);
     setAuthMessage("");
     setShowAuthModal(false);
+    setShowGameOverModal(false);
   };
 
   const handleLogout = async () => {
@@ -178,7 +182,7 @@ function App() {
       if (!res.ok) {
         setMessage(data.error || "Something went wrong.");
 
-        if (data.error === "Not a valid word.") {
+        if (data.error === "Not a valid word OR valid word API not working. Submit guess again or change word") {
           setShake(true);
           setTimeout(() => setShake(false), 500);
         }
@@ -327,7 +331,7 @@ function App() {
         </div>
       </div>
 
-      <h1>Definitely Not Wordle</h1>
+      <h1>Linkdle</h1>
 
       {showHowToPlay && (
         <div className="modal-backdrop">
@@ -343,11 +347,37 @@ function App() {
             <p><strong>Gray</strong>: letter is not in the word.</p>
 
             <button onClick={() => setShowHowToPlay(false)}>Start Playing</button>
+            {!user && (
+              <div className="modal-login-actions">
+                <p>Login to save your stats next game.</p>
+
+                <button
+                  onClick={() => {
+                    setShowHowToPlay(false);
+                    setShowAuthModal(true);
+                  }}
+                >
+                  Login
+                </button>
+
+                <button
+                  className="demo-button"
+                  onClick={() => {
+                    setShowHowToPlay(false);
+                    handleDemoLogin();
+                  }}
+                >
+                  Demo Login
+                </button>
+              </div>
+            )}
           </div>
+
         </div>
+
       )}
 
-      {showAuthModal && (
+      {showAuthModal && !user && (
         <div className="modal-backdrop">
           <div className="modal">
             <button className="close-button" onClick={() => setShowAuthModal(false)}>
@@ -401,7 +431,9 @@ function App() {
               className="close-button"
               onClick={() => {
                   setShowGameOverModal(false);
-                  setShowAuthModal(true);
+                  {!user && (
+                    <button onClick={() => setShowAuthModal(true)}>Login</button>
+                  )}
                 }
               }
             >
@@ -425,7 +457,10 @@ function App() {
 
             {!user && (
               <>
-                <button onClick={() => setShowAuthModal(true)}>Login</button>
+                <button onClick={() => {
+                  setShowAuthModal(true)
+                  setShowGameOverModal(false);
+                }}>Login</button>
                 <button className="demo-button" onClick={handleDemoLogin}>
                   Demo Login
                 </button>
